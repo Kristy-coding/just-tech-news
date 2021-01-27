@@ -7,7 +7,15 @@ const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/connection');
 
 // create our User model
-class User extends Model {}
+// we are adding a method to the instance of user that extends Model from sequelize
+// aka we created an instance method() 
+class User extends Model {
+    //set up method to run on instance data (per user) to check password
+    // using the keyword 'this' we can access this user's properties, including the password, which was stored as a hashed string 
+    checkPassword(loginPw) {
+        return bcrypt.compareSync(loginPw, this.password);
+    }
+}
 
 // define table columns and configuration
 //Once we create the User class, we use the .init() method to initialize the model's data and configuration, passing in two objects as arguments. The first object will define the columns and data types for those columns. The second object it accepts configures certain options for the table.
