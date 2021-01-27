@@ -1,3 +1,6 @@
+// require bcrypt node module to hash user passwords
+const bcrypt = require('bcrypt');
+
 //imported the Model CLASS and DataTypes OBJECT from Sequelize. This Model class is what we create our own models from using the extends keyword so User inherits all of the functionality the Model class has
 
 const { Model, DataTypes } = require('sequelize');
@@ -50,8 +53,29 @@ User.init(
     }
 },
 
-  {
-    // TABLE CONFIGURATION OPTIONS GO HERE (https://sequelize.org/v5/manual/models-definition.html#configuration))
+  { // SECOND OBJECT // TABLE CONFIGURATION OPTIONS GO HERE (https://sequelize.org/v5/manual/models-definition.html#configuration))
+    
+    //we can use special Sequelize functions called hooks in the model. Also known as lifecycle events, hooks are functions that are called before or after calls in Sequelize.
+    // In our case, we need a hook that will fire just before a new instance of User is created
+    hooks: {
+        // set up beofreCreate lifecycle "hook" funtionality
+        //We use the beforeCreate() hook to execute the bcrypt hash function on the plaintext password
+       // set up beforeCreate lifecycle "hook" functionality
+       //The async keyword is used as a prefix to the function that contains the asynchronous function. await can be used to prefix the async function, which will then gracefully assign the value from the response to the newUserData's password property. The newUserData is then returned to the application with the hashed password.
+       // in summary... . We used a new package, bcrypt, to hash the password and used a hook to hash the password just before it was saved to the database
+        async beforeCreate(newUserData) {
+            newUserData.password = await bcrypt.hash(newUserData.password, 10);
+            return newUserData;
+        }, 
+        // set up beforeUpdate lifecycle "hook" functionality
+        async beforeUpdate(updatedUserData) {
+            updatedUserData.password = await bcrypt.hash(updatedUserData.password, 10);
+            return updatedUserData;
+        }
+
+       
+    },
+    
 
     // pass in our imported sequelize connection (the direct connection to our database)
     sequelize,
