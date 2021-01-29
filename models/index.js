@@ -3,6 +3,7 @@
 const User = require('./User');
 const Post = require('./Post');
 const Vote = require('./Vote');
+const Comment = require('./Comment');
 
 // CREATE ASSOCIATIONS...
 
@@ -61,13 +62,33 @@ Post.hasMany(Vote, {
 });
 
 
+// Comment associations ...
+//Note that we don't have to specify Comment as a through table like we did for Vote. This is because we don't need to access Post through Comment; we just want to see the user's comment and which post it was for
+
+Comment.belongsTo(User, {
+    foreignKey: 'user_id'
+});
+  
+Comment.belongsTo(Post, {
+    foreignKey: 'post_id'
+});
+  
+User.hasMany(Comment, {
+    foreignKey: 'user_id'
+});
+  
+Post.hasMany(Comment, {
+    foreignKey: 'post_id'
+});
 
 
 
 
 
 
-module.exports = { User, Post, Vote };
+
+
+module.exports = { User, Post, Vote, Comment };
 
 
 

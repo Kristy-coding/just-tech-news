@@ -7,7 +7,7 @@ const router = require('express').Router();
 // this will grab the /models.index.js by default 
 // we need to require Post and User models 
 //In a query to the post table, we would like to retrieve not only information about each post, but also the user that posted it. With the foreign key, user_id, we can form a JOIN, an essential characteristic of the relational data model
-const {Post, User, Vote} = require('../../models');
+const {Post, User, Vote, Comment} = require('../../models');
 
 // get all posts
 // GET /api/posts
@@ -21,6 +21,15 @@ router.get('/', (req, res) => {
       // order by post recent posts
       order: [['created_at', 'DESC']],
       include: [
+           // include the Comment model here:
+          {
+            model: Comment,
+            attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+            include: {
+              model: User,
+              attributes: ['username']
+            }
+          },
           {
               model: User,
               attributes: ['username']
@@ -43,6 +52,15 @@ router.get('/:id', (req, res) => {
       },
       attributes: ['id', 'post_url', 'title', 'created_at',[sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']],
       include: [
+        // include the Comment model here:
+        {
+          model: Comment,
+          attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+          include: {
+            model: User,
+            attributes: ['username']
+          }
+        },
         {
           model: User,
           attributes: ['username']

@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 // requiring ../../models will actually connect to index.js be default, it will always look an index file if a more specific path isn't defined ../../models/index.js
-const {User, Post, Vote} = require('../../models');
+const {User, Post, Vote, Comment} = require('../../models');
 
 // GET/api/users
 router.get('/', (req, res)=> {
@@ -31,6 +31,15 @@ router.get('/:id', (req, res) => {
             {
               model: Post,
               attributes: ['id', 'title', 'post_url', 'created_at']
+            },
+             // include the Comment model here:
+            {
+                model: Comment,
+                attributes: ['id', 'comment_text', 'created_at'],
+                include: {
+                model: Post,
+                attributes: ['title']
+                }
             },
             {
               model: Post,
