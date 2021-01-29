@@ -28,3 +28,10 @@ app.use(routes);
 sequelize.sync({ force: false }).then(() => {
   app.listen(PORT, () => console.log('Now listening'));
 });
+
+//True or False? Do we need to drop the tables if we introduce changes to the model associations in Sequelize?
+// true
+//Yes, we do this by making Sequelize create new tables if the data model or model associations have changed by using the command sequelize.sync({force:true}) in the server.js file.
+
+//*********************************************************************** */
+//force: true is basically just resetting the table data/ clearing the data 
