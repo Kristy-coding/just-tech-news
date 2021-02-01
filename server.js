@@ -1,21 +1,33 @@
 
 
 const express = require('express');
-
+const path = require('path');
 //The router instance in routes/index.js (which is where this path is going) collected everything for us and packaged them up for server.js to use.
-const routes = require('./routes');
-
+const routes = require('./controllers');
 //importing the connection to Sequelize from this path
 const sequelize = require('./config/connection');
 
+// set up Handlebars.js as the template engine 
+const exphbs = require('express-handlebars');
+const hbs = exphbs.create({});
+
 const app = express();
+
+//setting up handlebars as the template engine 
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
+
 const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+//The express.static() method is a built-in Express.js middleware function that can take all of the contents of a folder and serve them as static assets. This is useful for front-end specific files like images, style sheets, and JavaScript files.
+app.use(express.static(path.join(__dirname, 'public')));
+
 // turn on routes
 app.use(routes);
+
 
 // turn on connection to db and server
 //use the sequelize.sync() method to establish the connection to the database. The "sync" part means that this is Sequelize taking the models and connecting them to associated database tables. If it doesn't find a table, it'll create it for you!
