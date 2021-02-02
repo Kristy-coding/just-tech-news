@@ -11,6 +11,7 @@ const { Post, User, Comment } = require('../models');
 
 //Previously, we used res.send() or res.sendFile() for the response. Because we've hooked up a template engine, we can now use res.render() and specify which template we want to use. In this case, we want to render the homepage.handlebars template (the .handlebars extension is implied)
 router.get('/', (req, res)=> {
+    console.log(req.session);
     //The res.render() method can accept a second argument, an object, which includes all of the data you want to pass to your template
     //Notice that this object mimics what we will ultimately get from Sequelize
     //In this case, we're going to take a single "post" object and pass it to the homepage.handlebars template
@@ -66,15 +67,25 @@ router.get('/', (req, res)=> {
           // add the posts array to an object and send it as an arguent to render
           // handles bar can loop over this array with {{#each block}}
           //Within the {{#each}} block, Handlebars.js is smart enough to know that it's working with an object on each iteration 
+          // We can make this a little clearer, however, by declaring a variable name in the {{#each}} expression and using that name for the subsequent placeholders
           res.render('homepage', { posts });
 
         })
         .catch(err => {
           console.log(err);
           res.status(500).json(err);
-        });
+    });
 
 
+});
+
+router.get('/login', (req, res) => {
+    if (req.session.loggedIn) {
+        res.redirect('/');
+        return;
+    }
+    //Our login page doesn't need any variables, so we don't need to pass a second argument to the render() method.
+    res.render('login')
 });
 
 module.exports = router;
