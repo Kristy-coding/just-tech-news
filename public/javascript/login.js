@@ -16,8 +16,8 @@ async function loginFormHandler(event) {
       });
   
       if (response.ok) {
-        // if respones is ok we will take the use to the homepage?
-        document.location.replace('/');
+        // if respones is ok we will take the user to the dashboard
+        document.location.replace('/dashboard');
       } else {
         alert(response.statusText);
       }

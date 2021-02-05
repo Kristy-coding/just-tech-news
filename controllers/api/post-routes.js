@@ -4,6 +4,9 @@
 const router = require('express').Router();
 const sequelize = require('../../config/connection');
 
+// authguard middleware to all non GET routes
+const withAuth = require('../../utils/auth');
+
 // this will grab the /models.index.js by default 
 // we need to require Post and User models 
 //In a query to the post table, we would like to retrieve not only information about each post, but also the user that posted it. With the foreign key, user_id, we can form a JOIN, an essential characteristic of the relational data model
@@ -81,12 +84,15 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /api/posts
-router.post('/', (req, res) => {
+router.post('/', withAuth,(req, res) => {
     // expects {title: 'Taskmaster goes public!', post_url: 'https://taskmaster.com/press', user_id: 1} from request body
     Post.create({
       title: req.body.title,
       post_url: req.body.post_url,
-      user_id: req.body.user_id
+      // originally we passed in the user Id from insomnia to test his routes... now this request is being made from a front-end form.
+      //user_id: req.body.user_id
+      //The user wiil not know their id, but we can get the id from the session
+      user_id: req.session.user_id
     })
       .then(dbPostData => res.json(dbPostData))
       .catch(err => {
@@ -98,7 +104,7 @@ router.post('/', (req, res) => {
  // PUT /api/posts/upvote
  // this route needs to be defined before router.put('/:id')***Otherwise Express.js will think the word "upvote" is a valid parameter for /:id
  //An upvote request will differ somewhat from the PUT requests we've created before. It will involve two queries: first, using the Vote model to create a vote, then querying on that post to get an updated vote count.
- router.put('/upvote', (req, res) => {
+ router.put('/upvote', withAuth, (req, res) => {
   // custom static method created in models/Post.js
   if (req.session) {
     Post.upvote({ ...req.body, user_id: req.session.user_id }, { Vote, Comment, User })
@@ -111,7 +117,7 @@ router.post('/', (req, res) => {
 });
 
 //UPDATE /api/posts/:id
-router.put('/:id', (req, res) => {
+router.put('/:id', withAuth, (req, res) => {
     Post.update(
       {
         title: req.body.title
@@ -137,7 +143,7 @@ router.put('/:id', (req, res) => {
 
 
 //DELETE /api/posts/:id
-router.delete('/:id', (req, res) => {
+router.delete('/:id', withAuth, (req, res) => {
     Post.destroy({
       where: {
         id: req.params.id

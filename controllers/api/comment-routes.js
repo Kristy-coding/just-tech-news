@@ -1,6 +1,9 @@
 const router = require('express').Router();
 const { Comment } = require('../../models');
 
+// authguard middleware to all non GET routes
+const withAuth = require('../../utils/auth');
+
 
 //GET /api/comments
 router.get('/', (req, res) => {
@@ -13,7 +16,7 @@ router.get('/', (req, res) => {
 });
 
 // POST /api/comments
-router.post('/', (req, res) => {
+router.post('/', withAuth, (req, res) => {
   // check the session
   //Wrapping the Sequelize queries in if (req.session) statements ensures that only logged-in users interact with the database
   // if you are not loggin in it wont let you create??
@@ -34,7 +37,7 @@ router.post('/', (req, res) => {
 
 
 //DELETE /api/comments/:id
-router.delete('/:id', (req, res) => {
+router.delete('/:id', withAuth,(req, res) => {
     Comment.destroy({
         where: {
           id: req.params.id
