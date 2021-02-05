@@ -65,10 +65,10 @@ router.get('/', (req, res)=> {
           // so const posts = an array of serialized posts  
           const posts = dbPostData.map(post => post.get({ plain: true }));
           // add the posts array to an object and send it as an arguent to render
-          // handles bar can loop over this array with {{#each block}}
+          // handles bar can loop over this array with {{#each}}
           //Within the {{#each}} block, Handlebars.js is smart enough to know that it's working with an object on each iteration 
           // We can make this a little clearer, however, by declaring a variable name in the {{#each}} expression and using that name for the subsequent placeholders
-          res.render('homepage', { posts });
+          res.render('homepage', { posts, loggedIn: req.session.loggedIn });
 
         })
         .catch(err => {
@@ -77,6 +77,69 @@ router.get('/', (req, res)=> {
     });
 
 
+});
+
+// TEST hard coded data before we write the sequelize .findONe query route 
+// router.get('/post/:id', (req, res) => {
+//   const post = {
+//     id: 1,
+//     post_url: 'https://handlebarsjs.com/guide/',
+//     title: 'Handlebars Docs',
+//     created_at: new Date(),
+//     vote_count: 10,
+//     comments: [{}, {}],
+//     user: {
+//       username: 'test_user'
+//     }
+//   };
+
+//   res.render('single-post', { post });
+// });
+
+router.get('/posts/:id', (req, res) => {
+  Post.findOne({
+    where: {
+      id: req.params.id
+    },
+    attributes: [
+      'id',
+      'post_url',
+      'title',
+      'created_at',
+      [sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'), 'vote_count']
+    ],
+    include: [
+      {
+        model: Comment,
+        attributes: ['id', 'comment_text', 'post_id', 'user_id', 'created_at'],
+        include: {
+          model: User,
+          attributes: ['username']
+        }
+      },
+      {
+        model: User,
+        attributes: ['username']
+      }
+    ]
+  })
+    .then(dbPostData => {
+      if (!dbPostData) {
+        res.status(404).json({ message: 'No post found with this id' });
+        return;
+      }
+
+      // serialize the data
+      const post = dbPostData.get({ plain: true });
+
+      // pass data to template
+      // here we are rendering the single-post handlebar template and passing the post object and logginIn  data as an object with the key loggedIn: and the value of req.seesion.logginIn (this value is eather going to be true or false)
+      res.render('single-post', { post, loggedIn: req.session.loggedIn });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
 router.get('/login', (req, res) => {

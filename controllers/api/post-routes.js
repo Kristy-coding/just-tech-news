@@ -1,8 +1,8 @@
 //include packages and models that we'll need to create the Express.js API endpoints
 
-const sequelize = require('../../config/connection');
-const router = require('express').Router();
 
+const router = require('express').Router();
+const sequelize = require('../../config/connection');
 
 // this will grab the /models.index.js by default 
 // we need to require Post and User models 
@@ -98,38 +98,16 @@ router.post('/', (req, res) => {
  // PUT /api/posts/upvote
  // this route needs to be defined before router.put('/:id')***Otherwise Express.js will think the word "upvote" is a valid parameter for /:id
  //An upvote request will differ somewhat from the PUT requests we've created before. It will involve two queries: first, using the Vote model to create a vote, then querying on that post to get an updated vote count.
-router.put('/upvote', (req, res) => {
-  //To create a vote, we need to pass in both the user's id and the post's id with req.body
-  // create the vote
-    //We updated the route to query on the post we voted on after the vote was created. As we do so, we want to tally up the total number of votes that post has
-    // create the vote
-    Vote.create({
-      user_id: req.body.user_id,
-      post_id: req.body.post_id
-    }).then(() => {
-      // then find the post we just voted on
-      return Post.findOne({
-        where: {
-          id: req.body.post_id
-        },
-        attributes: [
-          'id',
-          'post_url',
-          'title',
-          'created_at',
-          // use raw MySQL aggregate function query to get a count of how many votes the post has and return it under the name `vote_count`
-          [
-            sequelize.literal('(SELECT COUNT(*) FROM vote WHERE post.id = vote.post_id)'),
-            'vote_count'
-          ]
-        ]
-      })
-      .then(dbPostData => res.json(dbPostData))
+ router.put('/upvote', (req, res) => {
+  // custom static method created in models/Post.js
+  if (req.session) {
+    Post.upvote({ ...req.body, user_id: req.session.user_id }, { Vote, Comment, User })
+      .then(updatedVoteData => res.json(updatedVoteData))
       .catch(err => {
         console.log(err);
-        res.status(400).json(err);
+        res.status(500).json(err);
       });
-    });
+  }
 });
 
 //UPDATE /api/posts/:id
